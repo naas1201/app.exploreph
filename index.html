@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ExplorePH Listings</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExplorePH Listings</title>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-    <h1>Search Listings</h1>
+  <h1>Search Listings</h1>
 
-    <label for="fieldSelect">Filter by:</label>
-    <select id="fieldSelect">
-        <option value="name">Name</option>
-        <option value="description">Description</option>
-        <option value="categories">Categories</option>
-    </select>
+  <label for="fieldSelect">Filter by:</label>
+  <select id="fieldSelect">
+    <option value="name">Name</option>
+    <option value="description">Description</option>
+    <option value="categories">Categories</option>
+  </select>
 
-    <input type="text" id="search" placeholder="Search listings...">
+  <input type="text" id="search" placeholder="Search listings...">
+  <div id="results"></div>
 
-    <div id="results"></div> <!-- Only one results container -->
-
-    <script src="js/app.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
