@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("results").innerHTML = "<p>Loading data...</p>"; // Show loading message
+
     fetch("/data/listings.json")
         .then(response => response.json())
         .then(data => {
@@ -10,4 +11,13 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error loading JSON:", error);
             document.getElementById("results").innerHTML = "<p>Error loading data. Try again later.</p>";
         });
+
+    // Register Service Worker for PWA support
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("/sw.js")
+                .then(() => console.log("Service Worker Registered"))
+                .catch(error => console.log("Service Worker Registration Failed", error));
+        });
+    }
 });
