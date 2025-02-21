@@ -1,47 +1,69 @@
-// This is the "Offline page" service worker
-
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js');
 
-const CACHE = "pwabuilder-page";
+const CACHE_NAME = "exploreph-cache-v1";
 
-// TODO: replace the following with the correct offline fallback page i.e.: const offlineFallbackPage = "offline.html";
-const offlineFallbackPage = "ToDo-replace-this-name.html";
+// Offline fallback page (make sure this file exists in your project)
+const offlineFallbackPage = "offline.html";
 
+// Listen for a SKIP_WAITING message from your app to immediately activate the new service worker
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
 });
 
-self.addEventListener('install', async (event) => {
+// During installation, cache the offline fallback page and key assets
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE)
-      .then((cache) => cache.add(offlineFallbackPage))
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        // Add all assets you want available offline. Adjust paths as necessary.
+        return cache.addAll([
+          offlineFallbackPage,
+          "index.html",
+          "css/styles.css",
+          "js/app.js",
+          "data/listings.json"
+        ]);
+      })
   );
 });
 
+// Enable navigation preload if supported
 if (workbox.navigationPreload.isSupported()) {
   workbox.navigationPreload.enable();
 }
 
+// Handle fetch events
 self.addEventListener('fetch', (event) => {
+  // For navigation requests, try network first, then fallback to offline page if necessary.
   if (event.request.mode === 'navigate') {
-    event.respondWith((async () => {
-      try {
-        const preloadResp = await event.preloadResponse;
-
-        if (preloadResp) {
-          return preloadResp;
+    event.respondWith(
+      (async () => {
+        try {
+          // Use preload response if available
+          const preloadResponse = await event.preloadResponse;
+          if (preloadResponse) {
+            return preloadResponse;
+          }
+          // Try to fetch the request from the network
+          const networkResponse = await fetch(event.request);
+          return networkResponse;
+        } catch (error) {
+          // If network fetch fails, return the offline fallback page from the cache.
+          const cache = await caches.open(CACHE_NAME);
+          const cachedResponse = await cache.match(offlineFallbackPage);
+          return cachedResponse;
         }
-
-        const networkResp = await fetch(event.request);
-        return networkResp;
-      } catch (error) {
-
-        const cache = await caches.open(CACHE);
-        const cachedResp = await cache.match(offlineFallbackPage);
-        return cachedResp;
-      }
-    })());
+      })()
+    );
+  } else {
+    // For non-navigation requests, attempt to return a cached response, falling back to the network.
+    event.respondWith(
+      caches.match(event.request)
+        .then((cachedResponse) => {
+          return cachedResponse || fetch(event.request);
+        })
+    );
   }
 });
