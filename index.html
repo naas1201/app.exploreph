@@ -55,7 +55,11 @@
 
   <!-- Container for dynamic cards -->
   <div id="results"></div>
-
+<script>
+  if (typeof navigator.serviceWorker !== 'undefined') {
+    navigator.serviceWorker.register('sw.js')
+  }
+</script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const resultsContainer = document.getElementById("results");
