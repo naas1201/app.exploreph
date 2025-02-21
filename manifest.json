@@ -3,5 +3,19 @@
   "theme_color": "#000000",
   "background_color": "#000000",
   "short_name": "EXPH",
-  "id": "exploreph520"
+  "id": "exploreph520",
+  "display_override": [
+    "fullscreen",
+    "window-controls-overlay"
+  ],
+  "iarc_rating_id": "21",
+  "prefer_related_applications": false,
+  "categories": [
+    "business",
+    "entertainment",
+    "fitness",
+    "navigation",
+    "shopping",
+    "travel"
+  ]
 }
