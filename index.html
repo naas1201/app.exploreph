@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Data Fetcher</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <h1>Search Listings</h1>
+
+    <label for="fieldSelect">Select a Field:</label>
+    <select id="fieldSelect">
+        <option value="name">Name</option>
+        <option value="description">Description</option>
+        <option value="categories">Categories</option>
+    </select>
+
+    <input type="text" id="searchInput" placeholder="Type to search...">
+    <button onclick="fetchData()">Search</button>
+
+    <div id="results"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
