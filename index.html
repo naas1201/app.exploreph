@@ -5,11 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ExplorePH Listings</title>
   <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Basic styles for cards and layout */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    label, select, input {
+      margin: 5px 0;
+      display: block;
+    }
+    #results {
+      margin-top: 20px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 15px;
+      cursor: pointer;
+    }
+    .card h3, .card h4 {
+      margin-top: 0;
+    }
+    button {
+      margin-bottom: 15px;
+      padding: 10px 15px;
+      font-size: 1rem;
+    }
+  </style>
 </head>
 <body>
 
-  <h1>Search Listings</h1>
+  <h1>ExplorePH Listings</h1>
 
+  <!-- Dropdown to choose the filter field -->
   <label for="fieldSelect">Filter by:</label>
   <select id="fieldSelect">
     <option value="name">Name</option>
@@ -17,9 +50,148 @@
     <option value="categories">Categories</option>
   </select>
 
+  <!-- Search input (used when filtering by name or description) -->
   <input type="text" id="search" placeholder="Search listings...">
+
+  <!-- Container for dynamic cards -->
   <div id="results"></div>
 
-  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const resultsContainer = document.getElementById("results");
+      const searchInput = document.getElementById("search");
+      const fieldSelect = document.getElementById("fieldSelect");
+    
+      resultsContainer.innerHTML = "<p>Loading data...</p>";
+    
+      // Fetch data using a relative path; ensure that your data folder (with listings.json) is committed to your repo
+      fetch("data/listings.json")
+        .then(response => response.json())
+        .then(data => {
+          window.listingsData = data;  // Store globally for filtering
+          // Display categories view if "categories" is selected; otherwise, display all listings
+          if (fieldSelect.value === "categories") {
+            displayCategories();
+          } else {
+            displayListings(data);
+          }
+        })
+        .catch(error => {
+          console.error("Error loading JSON:", error);
+          resultsContainer.innerHTML = "<p>Error loading data. Try again later.</p>";
+        });
+    
+      // Listen for changes in the dropdown selection
+      fieldSelect.addEventListener("change", () => {
+        // Clear the search input when switching modes
+        searchInput.value = "";
+        if (fieldSelect.value === "categories") {
+          displayCategories();
+        } else {
+          displayListings(window.listingsData);
+        }
+      });
+    
+      // Listen for input changes for non-category filtering
+      searchInput.addEventListener("input", () => {
+        if (fieldSelect.value !== "categories") {
+          const searchTerm = searchInput.value.toLowerCase();
+          const filteredListings = window.listingsData.filter(item => {
+            let fieldValue = item[fieldSelect.value] || "";
+            return fieldValue.toLowerCase().includes(searchTerm);
+          });
+          displayListings(filteredListings);
+        }
+      });
+    
+      // Display listings as individual cards
+      function displayListings(listings) {
+        if (!listings || listings.length === 0) {
+          resultsContainer.innerHTML = "<p>No results found.</p>";
+          return;
+        }
+        resultsContainer.innerHTML = "";
+        listings.forEach(item => {
+          const card = document.createElement("div");
+          card.classList.add("card");
+          // Clicking a listing card in this view doesn't change the page,
+          // but you can add further functionality if needed.
+          card.innerHTML = `
+            <h3>${item.name || "No Name"}</h3>
+            <p><strong>Description:</strong> ${item.description || "No description available"}</p>
+            <p><strong>Address:</strong> ${item.address || "No address provided"}</p>
+            <p><strong>Opening Hours:</strong> ${item.opening_hours || "No hours available"}</p>
+            <p><strong>Contact:</strong> ${item.contact || "No contact info"}</p>
+          `;
+          resultsContainer.appendChild(card);
+        });
+      }
+    
+      // Group listings by category and display category cards
+      function displayCategories() {
+        const categoriesMap = {};
+        window.listingsData.forEach(listing => {
+          // Use the "categories" property; if not present, label as "Uncategorized"
+          let cat = listing.categories ? listing.categories.trim() : "Uncategorized";
+          if (!categoriesMap[cat]) {
+            categoriesMap[cat] = {
+              name: cat,
+              // Use categoryDescription if available; otherwise, leave blank
+              description: listing.categoryDescription || "",
+              listings: []
+            };
+          }
+          categoriesMap[cat].listings.push(listing);
+        });
+    
+        const categoriesArray = Object.values(categoriesMap);
+        resultsContainer.innerHTML = "";
+        categoriesArray.forEach(category => {
+          const card = document.createElement("div");
+          card.classList.add("card");
+          card.innerHTML = `
+            <h3>${category.name}</h3>
+            <p>${category.description || "No description available"}</p>
+          `;
+          // Clicking a category card shows all listings for that category
+          card.addEventListener("click", () => {
+            displayListingsForCategory(category);
+          });
+          resultsContainer.appendChild(card);
+        });
+      }
+    
+      // Display all listings for a specific category with a Back button
+      function displayListingsForCategory(category) {
+        // Create a Back button to return to the categories view
+        resultsContainer.innerHTML = `<button id="backButton">Back to Categories</button>`;
+        document.getElementById("backButton").addEventListener("click", () => {
+          displayCategories();
+        });
+        // Append each listing as a card for the selected category
+        category.listings.forEach(listing => {
+          const card = document.createElement("div");
+          card.classList.add("card");
+          card.innerHTML = `
+            <h4>${listing.name || "No Name"}</h4>
+            <p><strong>Description:</strong> ${listing.description || "No description available"}</p>
+            <p><strong>Address:</strong> ${listing.address || "No address provided"}</p>
+            <p><strong>Opening Hours:</strong> ${listing.opening_hours || "No hours available"}</p>
+            <p><strong>Contact:</strong> ${listing.contact || "No contact info"}</p>
+          `;
+          resultsContainer.appendChild(card);
+        });
+      }
+    
+      // Register the Service Worker if needed for PWA support
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("sw.js")
+            .then(() => console.log("Service Worker Registered"))
+            .catch(error => console.log("Service Worker Registration Failed", error));
+        });
+      }
+    });
+  </script>
 </body>
 </html>
