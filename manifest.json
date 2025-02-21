@@ -1,20 +1,7 @@
 {
-  "name": "JSON Fetch App",
-  "short_name": "FetchApp",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#007BFF",
-  "icons": [
-    {
-      "src": "/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+  "name": "ExplorePH",
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "short_name": "EXPH",
+  "id": "exploreph520"
 }
