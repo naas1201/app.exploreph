@@ -3,9 +3,9 @@
   "short_name": "ExplorePH",
   "description": "Discover cultural events, arts, networking, restaurants, bars, clubs, and tours in the Philippines.",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "theme_color": "#00871a",
   "icons": [
     {
       "src": "/icons/android/android-launchericon-512-512.png",
@@ -67,5 +67,17 @@
       "sizes": "44x44",
       "type": "image/png"
     }
+  ],
+  "dir": "auto",
+  "lang": "en",
+  "orientation": "any",
+  "display_override": [
+    "window-controls-overlay",
+    "fullscreen"
+  ],
+  "iarc_rating_id": "18",
+  "prefer_related_applications": false,
+  "categories": [
+    "travel"
   ]
 }
