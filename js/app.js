@@ -3,9 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("search");
   const fieldSelect = document.getElementById("fieldSelect");
 
-  resultsContainer.innerHTML = "<p>Loading data...</p>";
+  resultsContainer.innerHTML = "<p class='text-center'>Loading data...</p>";
 
-  // Firebase Setup
+  // Firebase Setup (using ES modules)
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
   import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
@@ -16,102 +16,99 @@ document.addEventListener("DOMContentLoaded", () => {
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Fetch Data from Firebase
   async function fetchListings() {
     try {
-      const snapshot = await get(ref(db, "listings")); // Fetch from Firebase
+      const snapshot = await get(ref(db, "listings"));
       if (snapshot.exists()) {
-        window.listingsData = Object.values(snapshot.val()); // Convert object to array
-        updateDisplay(); // Show initial listings
+        // Convert Firebase object to an array
+        window.listingsData = Object.values(snapshot.val());
+        updateDisplay();
       } else {
-        resultsContainer.innerHTML = "<p>No data found.</p>";
+        resultsContainer.innerHTML = "<p class='text-center'>No data found.</p>";
       }
     } catch (error) {
-      console.error("Error loading Firebase data:", error);
-      resultsContainer.innerHTML = "<p>Error loading data. Try again later.</p>";
+      console.error("Error fetching Firebase data:", error);
+      resultsContainer.innerHTML = "<p class='text-center'>Error loading data. Try again later.</p>";
     }
   }
 
-  fetchListings(); // Load Firebase data
+  fetchListings();
 
-  // Search & Filter Functionality
+  // Unified function to update the display based on search and filter
   function updateDisplay() {
     const searchTerm = searchInput.value.toLowerCase();
-    const selectedField = fieldSelect.value;
-
-    let filteredListings = window.listingsData || []; // Default to full dataset if undefined
-
-    // Perform filtering
+    const selectedField = fieldSelect.value; // "name", "location", or "categories"
+    
+    let filteredListings = window.listingsData || [];
+    
     if (searchTerm) {
-      filteredListings = filteredListings.filter((item) => {
-        const fieldValue = item[selectedField] ? String(item[selectedField]).toLowerCase() : "";
-        return fieldValue.includes(searchTerm);
+      filteredListings = filteredListings.filter(item => {
+        let fieldValue = "";
+        if (selectedField === "name") {
+          fieldValue = item.post_title || "";
+        } else if (selectedField === "location") {
+          fieldValue = item.meta?.lsd_address || "";
+        } else if (selectedField === "categories") {
+          fieldValue = item.taxonomies?.["listdom-category"]?.[0]?.name || "";
+        }
+        return fieldValue.toLowerCase().includes(searchTerm);
       });
     }
-
-    if (selectedField === "categories") {
-      displayCategories(filteredListings);
+    
+    if (selectedField === "categories" && !searchTerm) {
+      displayCategories(window.listingsData);
     } else {
       displayListings(filteredListings);
     }
   }
 
-  // Listen for search & filter changes
   searchInput.addEventListener("input", updateDisplay);
   fieldSelect.addEventListener("change", () => {
-    searchInput.value = ""; // Clear search when switching fields
+    searchInput.value = "";
     updateDisplay();
   });
 
-  // Display Listings
   function displayListings(listings) {
-    resultsContainer.innerHTML = listings.length === 0 ? "<p>No results found.</p>" : "";
+    if (!listings || listings.length === 0) {
+      resultsContainer.innerHTML = "<p class='text-center'>No results found.</p>";
+      return;
+    }
+    resultsContainer.innerHTML = "";
     listings.forEach(item => {
       const card = document.createElement("div");
-      card.classList.add("card");
+      card.className = "card bg-white p-4 rounded shadow";
       card.innerHTML = `
-        <h3>${item.post_title || "No Name"}</h3>
-        <p><strong>Description:</strong> ${item.post_content || "No description available"}</p>
-        <p><strong>Address:</strong> ${item.meta?.lsd_address || "No address provided"}</p>
-        <p><strong>Opening Hours:</strong> ${item.meta?.lsd_ava ? formatHours(item.meta.lsd_ava) : "No hours available"}</p>
-        <p><strong>Contact:</strong> ${item.meta?.lsd_phone || "No contact info"}</p>
+        <h3 class="text-xl font-bold mb-2">${item.post_title || "No Name"}</h3>
+        <p class="mb-2"><strong>Description:</strong> ${item.post_content || "No description available"}</p>
+        <p class="mb-2"><strong>Address:</strong> ${item.meta?.lsd_address || "No address provided"}</p>
+        <p class="mb-2"><strong>Opening Hours:</strong> ${item.meta?.lsd_ava ? formatHours(item.meta.lsd_ava) : "No hours available"}</p>
+        <p class="mb-2"><strong>Contact:</strong> ${item.meta?.lsd_phone || "No contact info"}</p>
       `;
       resultsContainer.appendChild(card);
     });
   }
 
-  // Display Categories
-  function displayCategories(filteredListings) {
+  function displayCategories(listings) {
+    // Group listings by category (using the first taxonomies category name)
     const categoriesMap = {};
-    (filteredListings || window.listingsData).forEach(listing => {
+    listings.forEach(listing => {
       let cat = listing.taxonomies?.["listdom-category"]?.[0]?.name || "Uncategorized";
       if (!categoriesMap[cat]) {
         categoriesMap[cat] = { name: cat, listings: [] };
       }
       categoriesMap[cat].listings.push(listing);
     });
-
     resultsContainer.innerHTML = "";
     Object.values(categoriesMap).forEach(category => {
       const card = document.createElement("div");
-      card.classList.add("card");
-      card.innerHTML = `<h3>${category.name}</h3>`;
+      card.className = "card bg-white p-4 rounded shadow cursor-pointer";
+      card.innerHTML = `<h3 class="text-xl font-bold">${category.name}</h3>`;
       card.addEventListener("click", () => displayListings(category.listings));
       resultsContainer.appendChild(card);
     });
   }
 
-  // Format Opening Hours
   function formatHours(ava) {
     return Object.values(ava).map(day => day.hours).join(", ");
-  }
-
-  // Register Service Worker
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("sw.js")
-        .then(() => console.log("Service Worker Registered"))
-        .catch(error => console.log("Service Worker Registration Failed", error));
-    });
   }
 });
