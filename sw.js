@@ -1,9 +1,10 @@
-const CACHE_NAME = "exploreph-v2";
+const CACHE_NAME = "exploreph-v3";
 const STATIC_ASSETS = [
     "/",
     "/index.html",
     "/css/styles.css",
     "/js/app.js",
+    "https://cdn.tailwindcss.com",
     "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js",
     "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"
 ];
@@ -34,11 +35,11 @@ self.addEventListener("activate", (event) => {
     self.clients.claim();
 });
 
-// Fetch Data (Cache First for Static Files, Network First for Firebase)
+// Fetch Strategy: Cache First for Static Files, Network First for Firebase Requests
 self.addEventListener("fetch", (event) => {
     const url = new URL(event.request.url);
 
-    // Firebase API Calls - Network First, then Cache
+    // Handle Firebase API requests (Network First, then Cache)
     if (url.origin.includes("firebaseio.com")) {
         event.respondWith(
             fetch(event.request)
@@ -48,12 +49,12 @@ self.addEventListener("fetch", (event) => {
                         return response;
                     });
                 })
-                .catch(() => caches.match(event.request)) // Fallback to cache if offline
+                .catch(() => caches.match(event.request)) // If offline, use cache
         );
         return;
     }
 
-    // Static Files - Cache First
+    // Handle Static Files (Cache First)
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
             return cachedResponse || fetch(event.request);
