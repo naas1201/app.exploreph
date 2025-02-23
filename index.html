@@ -4,15 +4,41 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ExplorePH Listings</title>
-  <link rel="manifest" href="manifest.json" />
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="ExplorePH - Discover the best places in the Philippines" />
+  <meta name="keywords" content="ExplorePH, Philippines, Travel, Businesses, Listings, Attractions" />
+  <meta name="author" content="ExplorePH Team" />
+
+  <!-- Open Graph (OG) for Facebook, Instagram, TikTok -->
+  <meta property="og:title" content="ExplorePH - Discover the Best of the Philippines" />
+  <meta property="og:description" content="Find amazing locations, events, and businesses in the Philippines with ExplorePH." />
+  <meta property="og:image" content="https://yourwebsite.com/cover-image.jpg" />
+  <meta property="og:url" content="https://yourwebsite.com" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ExplorePH - Your Ultimate Philippine Guide" />
+  <meta name="twitter:description" content="Discover top-rated locations, events, and businesses in the Philippines with ExplorePH." />
+  <meta name="twitter:image" content="https://yourwebsite.com/cover-image.jpg" />
+
+  <!-- Mobile & Social Media Optimization -->
+  <meta name="theme-color" content="#007bff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ExplorePH" />
+  <link rel="apple-touch-icon" href="https://yourwebsite.com/apple-touch-icon.png" />
+
+  <!-- Favicon & PWA Support -->
   <link rel="icon" href="favicon.ico" />
+  <link rel="manifest" href="manifest.json" />
+
   <!-- Tailwind CSS for mobile-first styling -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <meta name="description" content="ExplorePH - Discover the best places in the Philippines" />
-  <meta name="keywords" content="ExplorePH, Philippines, Listings, Travel, Businesses" />
-  <meta name="author" content="ExplorePH Team" />
 </head>
 <body class="bg-gray-100 text-gray-800">
+  
   <!-- Header -->
   <header class="bg-blue-600 text-white py-4 shadow">
     <div class="container mx-auto px-4 text-center">
@@ -38,7 +64,7 @@
     <div id="results" class="grid grid-cols-1 gap-4"></div>
   </section>
 
-  <!-- Load our app.js as an ES module -->
+  <!-- Load app.js as an ES module -->
   <script type="module" src="js/app.js"></script>
 
   <!-- Service Worker Registration -->
