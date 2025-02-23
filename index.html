@@ -1,36 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ExplorePH Listings</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="favicon.ico" />
+  <!-- Tailwind CSS via CDN for modern, mobile-first styling -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="ExplorePH - Discover the best places in the Philippines" />
+  <meta name="keywords" content="ExplorePH, Philippines, Listings, Travel, Businesses" />
+  <meta name="author" content="ExplorePH Team" />
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans">
-
+<body class="bg-gray-100 text-gray-800">
   <!-- Header -->
-  <header class="bg-blue-600 text-white text-center py-4 shadow-lg">
-    <h1 class="text-2xl font-bold">ExplorePH Listings</h1>
+  <header class="bg-blue-600 text-white py-4 shadow">
+    <div class="container mx-auto px-4 text-center">
+      <h1 class="text-3xl font-bold">ExplorePH Listings</h1>
+    </div>
   </header>
 
   <!-- Filter Section -->
-  <div class="max-w-4xl mx-auto mt-6 p-4 bg-white shadow-md rounded-lg">
-    <label for="fieldSelect" class="block font-semibold">Filter by:</label>
-    <select id="fieldSelect" class="w-full border-gray-300 rounded p-2 mt-1">
-      <option value="name">Name</option>
-      <option value="description">Description</option>
-      <option value="categories">Categories</option>
-    </select>
+  <section class="container mx-auto px-4 py-6">
+    <div class="bg-white shadow rounded-lg p-4">
+      <div class="mb-4">
+        <label for="fieldSelect" class="block text-sm font-medium text-gray-700">Filter by:</label>
+        <select id="fieldSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+          <option value="name">Name</option>
+          <option value="location">Location</option>
+          <option value="categories">Categories</option>
+        </select>
+      </div>
+      <div>
+        <input type="text" id="search" placeholder="Search listings..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
+      </div>
+    </div>
+  </section>
 
-    <input type="text" id="search" class="w-full border-gray-300 rounded p-2 mt-3" placeholder="Search listings...">
-  </div>
+  <!-- Results Section -->
+  <section class="container mx-auto px-4 pb-6">
+    <div id="results" class="grid grid-cols-1 gap-4"></div>
+  </section>
 
-  <!-- Listings Container -->
-  <div id="results" class="max-w-4xl mx-auto mt-6 p-4"></div>
+  <!-- Firebase & App Script: load as a module -->
+  <script type="module" src="js/app.js"></script>
 
-  <!-- Service Worker -->
+  <!-- Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js')
@@ -38,8 +53,5 @@
         .catch(error => console.log("Service Worker Registration Failed", error));
     }
   </script>
-
-  <!-- Firebase Integration & App Script -->
-  <script src="js/app.js" defer></script>
 </body>
 </html>
