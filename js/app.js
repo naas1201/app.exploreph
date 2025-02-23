@@ -1,45 +1,50 @@
-document.addEventListener("DOMContentLoaded", () => {
+// Import Firebase Modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
+// Firebase Configuration
+const firebaseConfig = {
+  databaseURL: "https://exploreph1-default-rtdb.asia-southeast1.firebasedatabase.app/"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+document.addEventListener("DOMContentLoaded", async () => {
   const resultsContainer = document.getElementById("results");
   const searchInput = document.getElementById("search");
   const fieldSelect = document.getElementById("fieldSelect");
 
   resultsContainer.innerHTML = `<p class="text-center">Loading data...</p>`;
 
-  // Firebase Setup using ES modules
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
-
-  const firebaseConfig = {
-    databaseURL: "https://exploreph1-default-rtdb.asia-southeast1.firebasedatabase.app/"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
   // Fetch listings from Firebase
   async function fetchListings() {
     try {
       const snapshot = await get(ref(db, "listings"));
       if (snapshot.exists()) {
-        // Convert the Firebase object into an array
         window.listingsData = Object.values(snapshot.val());
+        console.log("✅ Firebase Data Loaded:", window.listingsData); // Debugging log
         updateDisplay();
       } else {
-        resultsContainer.innerHTML = `<p class="text-center">No data found.</p>`;
+        console.warn("⚠️ No listings found in Firebase.");
+        resultsContainer.innerHTML = "<p class='text-center'>No data found.</p>";
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
-      resultsContainer.innerHTML = `<p class="text-center">Error loading data. Please try again later.</p>`;
+      console.error("❌ Firebase Fetch Error:", error);
+      resultsContainer.innerHTML = "<p class='text-center'>Error loading data. Please try again later.</p>";
     }
   }
 
-  fetchListings();
+  await fetchListings();
 
   // Update display based on search input and selected filter field
   function updateDisplay() {
-    const searchTerm = searchInput.value.toLowerCase();
+    if (!window.listingsData) return;
+
+    const searchTerm = searchInput.value.toLowerCase().trim();
     const filterBy = fieldSelect.value; // "name", "location", or "categories"
-    let filteredListings = window.listingsData || [];
+    let filteredListings = [...window.listingsData];
 
     if (searchTerm) {
       filteredListings = filteredListings.filter(item => {
@@ -47,23 +52,16 @@ document.addEventListener("DOMContentLoaded", () => {
         if (filterBy === "name") {
           fieldValue = item.post_title || "";
         } else if (filterBy === "location") {
-          // Use the first listdom-location name if available, else fallback to meta address
-          if (item.taxonomies && item.taxonomies["listdom-location"] && item.taxonomies["listdom-location"].length > 0) {
-            fieldValue = item.taxonomies["listdom-location"][0].name || "";
-          } else {
-            fieldValue = item.meta?.lsd_address || "";
-          }
+          fieldValue = item.taxonomies?.["listdom-location"]?.[0]?.name || item.meta?.lsd_address || "";
         } else if (filterBy === "categories") {
-          // Use the first listdom-category name if available
-          if (item.taxonomies && item.taxonomies["listdom-category"] && item.taxonomies["listdom-category"].length > 0) {
-            fieldValue = item.taxonomies["listdom-category"][0].name || "";
-          }
+          fieldValue = item.taxonomies?.["listdom-category"]?.[0]?.name || "";
         }
         return fieldValue.toLowerCase().includes(searchTerm);
       });
     }
 
-    // If filtering by categories and no search term is entered, show a grouped view
+    console.log("🔍 Filtered Listings:", filteredListings); // Debugging log
+
     if (filterBy === "categories" && !searchTerm) {
       displayCategories(window.listingsData);
     } else {
@@ -99,21 +97,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Display grouped categories as cards
   function displayCategories(listings) {
+    if (!listings || listings.length === 0) {
+      resultsContainer.innerHTML = `<p class="text-center">No categories found.</p>`;
+      return;
+    }
+
     const categoryMap = {};
     listings.forEach(item => {
-      let cat = "Uncategorized";
-      if (item.taxonomies && item.taxonomies["listdom-category"] && item.taxonomies["listdom-category"].length > 0) {
-        cat = item.taxonomies["listdom-category"][0].name || "Uncategorized";
-      }
+      let cat = item.taxonomies?.["listdom-category"]?.[0]?.name || "Uncategorized";
       if (!categoryMap[cat]) {
         categoryMap[cat] = { name: cat, listings: [] };
       }
       categoryMap[cat].listings.push(item);
     });
+
     resultsContainer.innerHTML = "";
     Object.values(categoryMap).forEach(category => {
       const catCard = document.createElement("div");
-      catCard.className = "bg-white p-4 rounded shadow cursor-pointer";
+      catCard.className = "bg-white p-4 rounded shadow cursor-pointer hover:bg-gray-200 transition";
       catCard.innerHTML = `<h3 class="text-xl font-bold">${category.name}</h3>`;
       catCard.addEventListener("click", () => {
         displayListings(category.listings);
